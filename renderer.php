@@ -81,13 +81,14 @@ class renderer_plugin_latexit extends Doku_Renderer {
      */
     protected $last_level_increase;
 
+    protected $table_count;
+    protected $rows_count;
+
     /**
      * Stores the information about the number of cells found in a table row.
      * @var int
      */
     protected $cells_count;
-
-    protected $rows_count;
 
     /**
      * Stores the information about the number a table cols.
@@ -225,6 +226,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
         $this->list_opened = FALSE;
         $this->recursive = FALSE;
         $this->in_table = FALSE;
+        $thi->table_count = 0;
         $this->last_level_increase = 0;
         $this->rowspan_handler = new RowspanHandler();
         $this->media = FALSE;
@@ -1235,10 +1237,20 @@ class renderer_plugin_latexit extends Doku_Renderer {
      * @param int $pos Not required in LaTeX.
      */
     function table_close($pos = null) {
+        global $ID;
+        //add a label, so each table can be referenced
+        if ($this->table_count == 0) {
+            $text = "wiki_".$ID;
+        } else {
+            $text = "wiki_".$ID."_table_".$this->table_count;
+        }
+        $label = $this->label_handler->newLabel($this->_createLabel($text));
+        $this->_c('label', 'tab:' . $label);
         //close the table environment
         $this->_c('hline');
         $this->_n();
         $this->in_table = false;
+        $thi->table_count += 1;
         //print the footer
         $this->_c('end', 'longtable', 2);
     }
@@ -1603,6 +1615,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
      */
     protected function _createLabel($text) {
         $text = preg_replace('#///ENTITYSTART///(.*?)///ENTITYEND///#si', '$1', $text);
+        $text = str_replace(":", "_", $text);
         $text = $this->_stripDiacritics($text);
         $text = strtolower($text);
         $text = str_replace(" ", "_", $text);

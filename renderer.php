@@ -1238,6 +1238,9 @@ class renderer_plugin_latexit extends Doku_Renderer {
      */
     function table_close($pos = null) {
         global $ID;
+        //close the table environment
+        $this->_c('hline');
+        $this->_n();
         //add a label, so each table can be referenced
         if ($this->table_count == 0) {
             $text = "wiki_".$ID;
@@ -1246,9 +1249,6 @@ class renderer_plugin_latexit extends Doku_Renderer {
         }
         $label = $this->label_handler->newLabel($this->_createLabel($text));
         $this->_c('label', 'tab:' . $label);
-        //close the table environment
-        $this->_c('hline');
-        $this->_n();
         $this->in_table = false;
         $thi->table_count += 1;
         //print the footer

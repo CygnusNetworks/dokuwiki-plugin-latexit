@@ -87,6 +87,8 @@ class renderer_plugin_latexit extends Doku_Renderer {
      */
     protected $cells_count;
 
+    protected $rows_count;
+
     /**
      * Stores the information about the number a table cols.
      * @var int
@@ -131,7 +133,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
 
     /**
      * Stores the instance of BibHandler
-     * @var BibHandler 
+     * @var BibHandler
      */
     protected $bib_handler;
 
@@ -143,7 +145,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
 
     /**
      * This handler prevents recursive inserting of subpages to be an unending loop.
-     * @var RecursionHandler 
+     * @var RecursionHandler
      */
     protected $recursion_handler;
 
@@ -218,7 +220,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
             $this->_initializeStore();
             echo "aaa";
         }
-        
+
         //initialize variables
         $this->list_opened = FALSE;
         $this->recursive = FALSE;
@@ -397,7 +399,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
                 header("Content-Disposition: attachment; filename=$output;");
             }
         }
-        //this is RECURSIVELY added file    
+        //this is RECURSIVELY added file
         else {
             //signal to the upper document, that we inserted media to ZIP archive
             if ($this->media) {
@@ -505,7 +507,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     }
 
     /**
-     * function is called, when renderer finds the end of a strong text 
+     * function is called, when renderer finds the end of a strong text
      */
     function strong_close() {
         $this->_close();
@@ -542,7 +544,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     }
 
     /**
-     * function is called, when renderer finds a monospace text 
+     * function is called, when renderer finds a monospace text
      * (all letters have same width)
      * It calls command for monospace text in LaTeX Document.
      */
@@ -551,7 +553,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     }
 
     /**
-     * function is called, when renderer finds the end of a monospace text 
+     * function is called, when renderer finds the end of a monospace text
      * (all letters have same width)
      */
     function monospace_close() {
@@ -559,7 +561,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     }
 
     /**
-     * function is called, when renderer finds a subscript 
+     * function is called, when renderer finds a subscript
      * It adds needed package and calls command for subscript in LaTeX Document.
      */
     function subscript_open() {
@@ -569,14 +571,14 @@ class renderer_plugin_latexit extends Doku_Renderer {
     }
 
     /**
-     * function is called, when renderer finds the end of a subscript 
+     * function is called, when renderer finds the end of a subscript
      */
     function subscript_close() {
         $this->_close();
     }
 
     /**
-     * function is called, when renderer finds a superscript 
+     * function is called, when renderer finds a superscript
      * It adds needed package and calls command for superscript in LaTeX Document.
      */
     function superscript_open() {
@@ -586,7 +588,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     }
 
     /**
-     * function is called, when renderer finds the end of a superscript 
+     * function is called, when renderer finds the end of a superscript
      */
     function superscript_close() {
         $this->_close();
@@ -748,7 +750,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
 
     /**
      * File tag is almost the same like the code tag, but it enables to download
-     * the code directly from DW. 
+     * the code directly from DW.
      * Therefore we just add the filename to the top of code.
      * @param string $text The code itself.
      * @param string $lang Programming language.
@@ -798,7 +800,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     /**
      * This function is called when an acronym is found. It just inserts it as a classic text.
      * I decided not to implement the mouse over text, although it is possible, but
-     * it does not work in all PDF browsers. 
+     * it does not work in all PDF browsers.
      * http://tex.stackexchange.com/questions/32314/is-there-an-easy-way-to-add-hover-text-to-all-incidents-of-math-mode-where-the-h
      * @param string $acronym The Acronym.
      */
@@ -969,7 +971,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
      *     It recursively adds the linked page to the exported LaTeX file
      * This feature is not in classic plugin configuration.
      * If you want to have a link recursively inserted, add ~~RECURSIVE~~ just before it.
-     * The count of ~ means the same as = for headers. It will determine the 
+     * The count of ~ means the same as = for headers. It will determine the
      * level of first header used in recursively inserted text.
      * @param string $link Internal link (can be without proper namespace)
      * @param string/array $title Title, can be null or array (if it is media)
@@ -1215,13 +1217,16 @@ class renderer_plugin_latexit extends Doku_Renderer {
 
         //print the header
         $this->_c('begin', 'longtable', 0);
-        $this->doc .= "{|";
-        for ($i = 0; $i < $maxcols; $i++) {
+        $this->doc .= "{";
+        for ($i = 1; $i < $maxcols; $i++) {
             $this->doc .= $this->getConf('default_table_align') . "|";
         }
+        $this->doc .= $this->getConf('default_table_align');
         $this->_close();
         $this->_n();
         $this->_c('hline');
+
+        $this->rows_count = 0;
     }
 
     /**
@@ -1231,6 +1236,8 @@ class renderer_plugin_latexit extends Doku_Renderer {
      */
     function table_close($pos = null) {
         //close the table environment
+        $this->_c('hline');
+        $this->_n();
         $this->in_table = false;
         //print the footer
         $this->_c('end', 'longtable', 2);
@@ -1250,11 +1257,14 @@ class renderer_plugin_latexit extends Doku_Renderer {
     function tablerow_close() {
         //add syntax for end of a row
         $this->doc .= " \\\\ ";
-        $this->_n();
-        //add line
-        $this->_c('hline');
+        if ($this->rows_count==0) {
+            $this->_n();
+            //add line
+            $this->_c('hline');
+        }
         $this->doc .= " ";
         $this->_n();
+        $this->rows_count+=1;
     }
 
     /**
@@ -1281,7 +1291,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
     /**
      * Function handling exporting of each cell in a table.
      * @param int $colspan Sets collspan of the cell.
-     * @param string $align Sets align of the cell. 
+     * @param string $align Sets align of the cell.
      * @param int $rowspan Sets rows[am of the cell.
      */
     function tablecell_open($colspan = 1, $align = NULL, $rowspan = 1) {
@@ -1375,7 +1385,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
      * @param string $command Name of the command.
      * @param string $text Text to insert into the brackets.
      * @param int $newlines How many newlines after the command to insert.
-     * @param array $params Array of parameters to be inserted. 
+     * @param array $params Array of parameters to be inserted.
      */
     protected function _c($command, $text = NULL, $newlines = 1, $params = NULL) {
         //if there is no text, there will be no brackets
@@ -1764,7 +1774,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
             return true;
         }
     }
-    
+
     /**
      * Initializes store variable.
      */

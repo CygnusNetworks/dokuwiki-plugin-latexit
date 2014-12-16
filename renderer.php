@@ -1249,6 +1249,10 @@ class renderer_plugin_latexit extends Doku_Renderer {
         }
         $label = $this->label_handler->newLabel($this->_createLabel($text));
         $this->_c('label', 'tab:' . $label);
+        if (($this->getConf('title') != "") && ($this->table_count == 0)) {
+             $this->_c('caption',$this->getConf('title'));
+        }
+
         $this->in_table = false;
         $this->table_count += 1;
         //print the footer

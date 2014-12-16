@@ -226,7 +226,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
         $this->list_opened = FALSE;
         $this->recursive = FALSE;
         $this->in_table = FALSE;
-        $thi->table_count = 0;
+        $this->table_count = 0;
         $this->last_level_increase = 0;
         $this->rowspan_handler = new RowspanHandler();
         $this->media = FALSE;

@@ -1243,9 +1243,9 @@ class renderer_plugin_latexit extends Doku_Renderer {
         $this->_n();
         //add a label, so each table can be referenced
         if ($this->table_count == 0) {
-            $text = "wiki_".$ID;
+            $text = "wiki-".$ID;
         } else {
-            $text = "wiki_".$ID."_table_".$this->table_count;
+            $text = "wiki-".$ID."-table-".$this->table_count;
         }
         $label = $this->label_handler->newLabel($this->_createLabel($text));
         $this->_c('label', 'tab:' . $label);
@@ -1615,10 +1615,11 @@ class renderer_plugin_latexit extends Doku_Renderer {
      */
     protected function _createLabel($text) {
         $text = preg_replace('#///ENTITYSTART///(.*?)///ENTITYEND///#si', '$1', $text);
-        $text = str_replace(":", "_", $text);
+        $text = str_replace(":", "-", $text);
+        $text = str_replace(" ", "-", $text);
+        $text = str_replace("_", "-", $text);
         $text = $this->_stripDiacritics($text);
         $text = strtolower($text);
-        $text = str_replace(" ", "_", $text);
         $text = $this->_removeMathAndSymbols($text);
         return $text;
     }
@@ -1776,7 +1777,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
         $text = preg_replace("#\$(.*)\$#", "", $text);
         //next regex comes from this site:
         //http://stackoverflow.com/questions/5199133/function-to-return-only-alpha-numeric-characters-from-string
-        $text = preg_replace("/[^a-zA-Z0-9_ ]+/", "", $text);
+        $text = preg_replace("/[^a-zA-Z0-9_ ]+/", "-", $text);
         return $text;
     }
 

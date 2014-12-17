@@ -272,7 +272,7 @@ class renderer_plugin_latexit extends Doku_Renderer {
             $this->store->addPackage($pckg);
 
             // add metadata to preamble
-            $this->store->addPreamble(array('date', '\today')); // FIXME use the document's date instead
+            // $this->store->addPreamble(array('date', '\today')); // FIXME use the document's date instead
             $this->store->addPreamble(array('title', $this->getConf('title')));
             $this->store->addPreamble(array('author', $this->getConf('author')));
 
@@ -1240,7 +1240,10 @@ class renderer_plugin_latexit extends Doku_Renderer {
         global $ID;
         //close the table environment
         $this->_c('hline');
-        $this->_n();
+        //$this->_n();
+        if (($this->getConf('table_title') != "") && ($this->table_count == 0)) {
+             $this->_c('caption',$this->getConf('table_title'));
+        }
         //add a label, so each table can be referenced
         if ($this->table_count == 0) {
             $text = "wiki-".$ID;
@@ -1249,9 +1252,6 @@ class renderer_plugin_latexit extends Doku_Renderer {
         }
         $label = $this->label_handler->newLabel($this->_createLabel($text));
         $this->_c('label', 'tab:' . $label);
-        if (($this->getConf('title') != "") && ($this->table_count == 0)) {
-             $this->_c('caption',$this->getConf('title'));
-        }
 
         $this->in_table = false;
         $this->table_count += 1;
